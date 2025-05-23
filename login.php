@@ -1,69 +1,68 @@
+<?php
+session_start();
+require_once 'db_connect.php';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST['username'];
+    $password = $_POST['password']; 
+
+   
+    $sql = "SELECT * FROM user WHERE username = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows == 1) {
+        $user = $result->fetch_assoc();
+        if ($password == $user['password']) { 
+            $_SESSION['id_user'] = $user['id_user'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['id_level'] = $user['id_level'];
+
+           
+          if ($user['id_level'] == 1) { 
+                header("Location: admin.php");
+            } else { 
+                header("Location: user.php");
+            }
+            exit();
+        } else {
+            $error_message = "Username atau password salah.";
+        }
+    } else {
+        $error_message = "Username atau password salah.";
+    }
+    $stmt->close();
+}
+?>
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login</title>
-    <style>
-        body {
-            background-color: #7892B0;
-            font-family: Arial, sans-serif;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .login-container {
-            background-color: #555B7B;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 0 10px #333;
-        }
-        .login-container h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin: 15px 0;
-        }
-        label {
-            display: inline-block;
-            width: 90px;
-        }
-        input[type="text"], input[type="password"] {
-            padding: 8px;
-            width: 200px;
-            border: none;
-            border-radius: 5px;
-            background-color: #ddd;
-        }
-        .login-button {
-            width: 100%;
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #3b5998;
-            border: none;
-            color: white;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .login-button:hover {
-            background-color: #2d4373;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Restoran</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <form class="login-container" action="process_login.php" method="POST">
-        <h2>Login</h2>
-        <div class="form-group">
-            <label for="username">username :</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        <div class="form-group">
-            <label for="password">password :</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <button class="login-button" type="submit">Login</button>
-    </form>
+    <div class="login-container">
+        <h2>Login Restoran</h2>
+        <?php if (isset($error_message)) { echo "<p class='error'>$error_message</p>"; } ?>
+        <form action="login.php" method="POST">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </div>
 </body>
 </html>
+<?php
+$conn->close();
+?>
